@@ -63,6 +63,10 @@
       userEmail = "nick@knox.codes";
     };
 
+    # Enable the fish shell explictly so home manager knows about it.
+    # Be a bit careful; this will override certain fish configurations at the NixOS level.
+    fish.enable = true;
+
     # chromium sometimes useful
     chromium = {
       enable = true;
@@ -102,12 +106,16 @@
   # The home.packages option allows you to install Nix packages into your
   # environment.
   home.packages = with pkgs; [
+    # sorry, i like GUIs
     kdePackages.kdenlive
     fragments
     signal-desktop
     dconf-editor
     obsidian
     spotify
+
+    # required for the shell aliases below
+    yt-dlp
 
     # custom packages
     dv
