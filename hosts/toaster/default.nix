@@ -132,10 +132,11 @@
   # use a custom userspace scheduler.
   # may provide improved responsiveness with interactive workloads.
   # requires Kernel 6.12 or later
-  services.scx = {
-    enable = true;
-    scheduler = "scx_bpfland";
-  };
+  # NOTE: I've disabled this after determining its kind of a meme and causes stability issues
+  # services.scx = {
+  #   enable = true;
+  #   scheduler = "scx_bpfland";
+  # };
 
   # device emulation support (required for Steam input)
   # Note that you will still need to add users to the "uinput" group
