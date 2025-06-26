@@ -128,6 +128,10 @@
     # download youtube as either video or audio: highest available quality
     yta = ''yt-dlp -o "~/Downloads/%(title)s.%(ext)s" --restrict-filenames -f ba --remux-video ogg "$1"'';
     ytv = ''yt-dlp -o "~/Downloads/%(title)s.%(ext)s" --restrict-filenames --recode-video mp4 "$1"'';
+
+    # nix shorthands
+    knx = ''sudo nixos-rebuild switch --flake .'';
+    knxh = ''home-manager switch --flake .'';
   };
 
   # gnome settings
@@ -178,7 +182,7 @@
       # screen diming / poweroff while plugged in
       "org/gnome/settings-daemon/plugins/power".idle-dim = false;
       "org/gnome/settings-daemon/plugins/power".sleep-inactive-ac-type = "nothing";
-      "org/gnome/desktop/session".idle-delay = lib.hm.gvariant.mkUint32 300;
+      "org/gnome/desktop/session".idle-delay = lib.hm.gvariant.mkUint32 900;
 
       # no indexing, thanks
       "org/freedesktop/tracker/miner/files".index-recursive-directories = [];
