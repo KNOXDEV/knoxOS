@@ -7,4 +7,4 @@ if [[ "$VCODEC" = "hevc" ]]; then
 	INPUT_ARGS=(-hwaccel cuda -hwaccel_output_format cuda "${INPUT_ARGS[@]}")
 fi
 
-ffmpeg "${INPUT_ARGS[@]}" -i "$1" -c:v hevc_nvenc -preset p5 -multipass qres -rc vbr -cq 19 -c:a copy ./trimmed.mp4
+ffmpeg "${INPUT_ARGS[@]}" -i "$1" -c:v hevc_nvenc -preset p5 -multipass qres -rc vbr -cq 19 ./trimmed.mp4
