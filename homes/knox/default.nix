@@ -1,7 +1,6 @@
 {
   pkgs,
   lib,
-  overlays,
   ...
 }: {
   # Home Manager needs a bit of information about you and the paths it should
@@ -17,18 +16,6 @@
   # want to update the value, then make sure to first check the Home Manager
   # release notes.
   home.stateVersion = "25.05"; # Please read the comment before changing.
-
-  nixpkgs = {
-    config.allowUnfree = true;
-
-    # overlay over nixpkgs so we can access things like vscode extensions and custom packages
-    overlays = with overlays; [
-      vscode-extensions
-      firefox-addons
-      additions
-      modifications
-    ];
-  };
 
   # imported home-manager modules
   imports = [
@@ -133,7 +120,6 @@
 
     # nix shorthands
     knx = ''sudo nixos-rebuild switch --flake .'';
-    knxh = ''home-manager switch --flake .'';
   };
 
   # gnome settings

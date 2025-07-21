@@ -65,17 +65,18 @@
         modules = [
           ./hosts/toaster
           nix-index-database.nixosModules.nix-index
+          # home manager initialization as a NixOS module
+          home-manager.nixosModules.home-manager
+          {
+            # follow nixos nixpkgs, which will cause the "nixpkgs" option in the home-manager config to be ignored
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.users.knox = import ./homes/knox;
+          }
+          # so nixos and home-manager have access to our custom packages
+          { nixpkgs.overlays = nixpkgs.lib.attrsets.attrValues self.outputs.overlays; }
         ];
-        # allows us to access our own packages and overlays
-        specialArgs = {overlays = self.outputs.overlays;};
       };
-    };
-
-    # home-manager config
-    homeConfigurations.knox = home-manager.lib.homeManagerConfiguration {
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      modules = [./homes/knox];
-      extraSpecialArgs = {overlays = self.outputs.overlays;};
     };
   };
 }
