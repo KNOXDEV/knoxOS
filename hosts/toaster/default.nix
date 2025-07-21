@@ -409,7 +409,7 @@
         ytv = ''yt-dlp -o "~/Downloads/%(title)s.%(ext)s" --restrict-filenames --recode-video mp4 "$1"'';
 
         # nix shorthands
-        knx = ''sudo nixos-rebuild switch --flake .'';
+        upgrade = ''nix flake update && sudo nixos-rebuild switch --flake path://'';
       };
 
       # restarting modified systemd units after a home-manager switch is nice
