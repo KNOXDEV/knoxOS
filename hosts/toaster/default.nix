@@ -1,12 +1,27 @@
 {
   config,
   pkgs,
+  overlays,
+  nixosModules,
+  homeManagerModules,
   ...
 }: {
   imports = [
     ./hardware-configuration.nix
-    ./logiops.nix
+    nixosModules.logiops
   ];
+
+  nixpkgs = {
+     # Allow unfree packages
+    config.allowUnfree = true;
+
+    # overlay our custom and imported packages
+    overlays = [
+      overlays.additions
+      overlays.vscode-extensions
+      overlays.firefox-addons
+    ];
+  };
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
@@ -207,9 +222,6 @@
     enable = true;
   };
 
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
-
   environment = {
     # gnome packages to not install
     gnome.excludePackages = with pkgs; [
@@ -237,7 +249,7 @@
       geary # email client
       epiphany # firefox fork
       gnome-calendar
-      gnome-console
+      gnome-console # blackbox
     ];
 
     # system packages to install globally
@@ -272,14 +284,6 @@
     ];
   };
 
-  # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.users.knox = {
-    isNormalUser = true;
-    description = "Nick Knox";
-    extraGroups = ["networkmanager" "wheel" "docker" "uinput" ];
-    shell = pkgs.fish;
-  };
-
   # nix settings
   nix = {
     settings.auto-optimise-store = true;
@@ -300,8 +304,121 @@
     pkgs.game-devices-udev-rules
   ];
 
-  # firewall
-  # networking.firewall.enable = false;
+  # Define a user account. Don't forget to set a password with ‘passwd’.
+  users.users.knox = {
+    isNormalUser = true;
+    description = "Nick Knox";
+    extraGroups = ["networkmanager" "wheel" "docker" "uinput" ];
+    shell = pkgs.fish;
+  };
+
+  # home manager configuration for the only user above
+  home-manager = {
+    # follow nixos nixpkgs
+    useGlobalPkgs = true;
+    useUserPackages = true;
+
+    users.knox = { pkgs, lib, ... }: {
+      home.username = "knox";
+      home.homeDirectory = "/home/knox";
+      home.stateVersion = "25.05"; # DO NOT CHANGE EVER
+
+      # home-manager modules
+      imports = [
+        homeManagerModules.firefox
+        homeManagerModules.vscode
+        homeManagerModules.gnome-settings
+      ];
+
+      # sets the wallpaper to be used in the gnome-settings module
+      gnome-settings.wallpaper = ./wallpaper.jpg;
+
+      # home-manager programs
+      programs = {
+        git = {
+          enable = true;
+          userName = "Nick Knox";
+          userEmail = "nick@knox.codes";
+        };
+
+        # Enable the fish shell explictly so home manager knows about it.
+        # Be a bit careful; this will override certain fish configurations at the NixOS level.
+        fish.enable = true;
+
+        # chromium sometimes useful
+        chromium = {
+          enable = true;
+          package = pkgs.ungoogled-chromium;
+        };
+
+        # boy howdy do I love electron
+        vesktop.enable = true;
+
+        # TODO: will be available starting with next stable
+        # obsidian.enable = true;
+
+        # obs with nvidia support
+        obs-studio = {
+          enable = true;
+          package = pkgs.obs-studio.override {
+            cudaSupport = true;
+          };
+        };
+
+        # hipster cli tools
+        zoxide = {
+          enable = true;
+          enableFishIntegration = true;
+          options = ["--cmd cd"];
+        };
+        bat.enable = true;
+        eza = {
+          enable = true;
+          enableFishIntegration = true;
+        };
+        fastfetch.enable = true;
+        fd.enable = true;
+        ripgrep.enable = true;
+      };
+
+      # The home.packages option allows you to install Nix packages into your
+      # environment.
+      home.packages = with pkgs; [
+        # sorry, i like GUIs
+        kdePackages.kdenlive
+        fragments
+        signal-desktop
+        dconf-editor
+        obsidian
+        spotify
+        calibre
+        blackbox-terminal
+
+        # required for the shell aliases below
+        yt-dlp
+
+        # custom packages
+        dv
+        fftrim
+      ];
+
+      # shell aliases 
+      home.shellAliases = {
+        # download youtube as either video or audio: highest available quality
+        yta = ''yt-dlp -o "~/Downloads/%(title)s.%(ext)s" --restrict-filenames -f ba --remux-video ogg "$1"'';
+        ytv = ''yt-dlp -o "~/Downloads/%(title)s.%(ext)s" --restrict-filenames --recode-video mp4 "$1"'';
+
+        # nix shorthands
+        knx = ''sudo nixos-rebuild switch --flake .'';
+      };
+
+      # restarting modified systemd units after a home-manager switch is nice
+      systemd.user.startServices = "sd-switch";
+
+      # Let Home Manager install and manage itself.
+      programs.home-manager.enable = true;
+    };
+  };
 
   # Basically used to pin application data storage formats
   # to the original version of NixOS installed on this machine.

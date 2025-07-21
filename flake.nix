@@ -58,6 +58,10 @@
     # custom nixpkgs overlays, mainly for using with our primary configurations
     overlays = import ./overlays {inherit enumerateCustomPackages;} // importedOverlays;
 
+    # reusable modules
+    nixosModules = import ./modules/nixos;
+    homeManagerModules = import ./modules/hm;
+
     # nixos config
     nixosConfigurations = {
       toaster = nixpkgs.lib.nixosSystem {
@@ -65,17 +69,10 @@
         modules = [
           ./hosts/toaster
           nix-index-database.nixosModules.nix-index
-          # home manager initialization as a NixOS module
           home-manager.nixosModules.home-manager
-          {
-            # follow nixos nixpkgs, which will cause the "nixpkgs" option in the home-manager config to be ignored
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.users.knox = import ./homes/knox;
-          }
-          # so nixos and home-manager have access to our custom packages
-          { nixpkgs.overlays = nixpkgs.lib.attrsets.attrValues self.outputs.overlays; }
         ];
+        # let our nixos config use our overlays and modules
+        specialArgs = {inherit (self.outputs) overlays nixosModules homeManagerModules;};
       };
     };
   };

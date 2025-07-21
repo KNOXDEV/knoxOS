@@ -1,0 +1,3 @@
+{
+  logiops = import ./logiops.nix;
+}
