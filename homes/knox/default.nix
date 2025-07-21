@@ -113,6 +113,8 @@
     dconf-editor
     obsidian
     spotify
+    calibre
+    blackbox-terminal
 
     # required for the shell aliases below
     yt-dlp
@@ -182,7 +184,7 @@
       # screen diming / poweroff while plugged in
       "org/gnome/settings-daemon/plugins/power".idle-dim = false;
       "org/gnome/settings-daemon/plugins/power".sleep-inactive-ac-type = "nothing";
-      "org/gnome/desktop/session".idle-delay = lib.hm.gvariant.mkUint32 900;
+      "org/gnome/desktop/session".idle-delay = lib.hm.gvariant.mkUint32 0;
 
       # no indexing, thanks
       "org/freedesktop/tracker/miner/files".index-recursive-directories = [];

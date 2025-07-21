@@ -237,6 +237,7 @@
       geary # email client
       epiphany # firefox fork
       gnome-calendar
+      gnome-console
     ];
 
     # system packages to install globally
