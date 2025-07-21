@@ -17,7 +17,7 @@
       bookmarks.settings = [
         {
           name = "MyNixOS Search";
-          keyword = "nix";
+          keyword = "!nix";
           url = "https://mynixos.com/search?q=%s";
         }
       ];
