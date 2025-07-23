@@ -95,13 +95,18 @@
       intelBusId = "PCI:0:2:0";
       nvidiaBusId = "PCI:1:0:0";
 
+      # sync means the graphics card will always be ready to go, which provides slightly snappier desktop performance.
+      sync.enable = true;
       # offloading means the nvidia driver will only be used when called upon.
-      offload = {
-        enable = true;
-        enableOffloadCmd = true;
-      };
+      # offload = {
+      #   enable = true;
+      #   enableOffloadCmd = true;
+      # };
     };
   };
+
+  # this laptop supports firmware update
+  services.fwupd.enable = true;
 
   services.xserver = {
     # Enable the X11 windowing system.
@@ -282,6 +287,13 @@
       pciutils
       usbutils
     ];
+
+    # misc envvars
+    variables = {
+      # variable to avoid an obscure annoying bug on GNOME/Nvidia Optimus setups
+      # https://wiki.archlinux.org/title/GTK#GTK4_applications_using_the_dGPU_on_NVIDIA_Optimus_setups
+      GSK_RENDERER = "ngl";
+    };
   };
 
   # nix settings
