@@ -1,5 +1,4 @@
 {
-  config,
   pkgs,
   overlays,
   nixosModules,
@@ -8,6 +7,7 @@
 }: {
   imports = [
     ./hardware-configuration.nix
+    nixosModules.hardware.precision5570
     nixosModules.logiops
   ];
 
@@ -31,10 +31,8 @@
   # loading screen while booting
   boot.plymouth.enable = true;
 
+  # networking
   networking.hostName = "toaster";
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-
-  # Enable networking
   networking.networkmanager.enable = true;
 
   # Set your time zone.
@@ -59,55 +57,6 @@
   # https://wiki.nixos.org/wiki/ZSA_Keyboards
   hardware.keyboard.zsa.enable = true;
 
-  # nvidia graphics, lets go
-  hardware.graphics = {
-    enable = true;
-  };
-
-  hardware.nvidia = {
-    # Modesetting is required.
-    modesetting.enable = true;
-
-    # Nvidia power management. Experimental, and can cause sleep/suspend to fail.
-    # Enable this if you have graphical corruption issues or application crashes after waking
-    # up from sleep. This fixes it by saving the entire VRAM memory to /tmp/ instead
-    # of just the bare essentials.
-    powerManagement.enable = false;
-
-    # Fine-grained power management. Turns off GPU when not in use.
-    # Experimental and only works on modern Nvidia GPUs (Turing or newer).
-    powerManagement.finegrained = false;
-
-    # Use the NVidia open source kernel module (not to be confused with the
-    # independent third-party "nouveau" open source driver).
-    open = true;
-
-    # Enable the Nvidia settings menu
-    nvidiaSettings = true;
-
-    # Optionally, you may need to select the appropriate driver version for your specific GPU.
-    # stable, beta, etc
-    package = config.boot.kernelPackages.nvidiaPackages.stable;
-
-    # prime
-    prime = {
-      # manually spec'd to my laptop
-      intelBusId = "PCI:0:2:0";
-      nvidiaBusId = "PCI:1:0:0";
-
-      # sync means the graphics card will always be ready to go, which provides slightly snappier desktop performance.
-      sync.enable = true;
-      # offloading means the nvidia driver will only be used when called upon.
-      # offload = {
-      #   enable = true;
-      #   enableOffloadCmd = true;
-      # };
-    };
-  };
-
-  # this laptop supports firmware update
-  services.fwupd.enable = true;
-
   services.xserver = {
     # Enable the X11 windowing system.
     enable = true;
@@ -121,12 +70,6 @@
       layout = "us";
       variant = "";
     };
-
-    # both are needed for prime
-    videoDrivers = [
-      "modesetting"
-      "nvidia"
-    ];
   };
 
   # I love CUPS!!!!
@@ -149,18 +92,14 @@
     pulse.enable = true;
   };
 
-  # use a custom userspace scheduler.
-  # may provide improved responsiveness with interactive workloads.
-  # requires Kernel 6.12 or later
-  # NOTE: I've disabled this after determining its kind of a meme and causes stability issues
-  # services.scx = {
-  #   enable = true;
-  #   scheduler = "scx_bpfland";
-  # };
-
   # device emulation support (required for Steam input)
   # Note that you will still need to add users to the "uinput" group
   hardware.uinput.enable = true;
+
+  # out-of-the-box support for user-access to various game controllers
+  services.udev.packages = [
+    pkgs.game-devices-udev-rules
+  ];
 
   # some software is better off flatpak'd
   services.flatpak.enable = true;
@@ -223,9 +162,7 @@
   };
 
   # docker
-  virtualisation.docker = {
-    enable = true;
-  };
+  virtualisation.docker.enable = true;
 
   environment = {
     # gnome packages to not install
@@ -254,7 +191,6 @@
       geary # email client
       epiphany # firefox fork
       gnome-calendar
-      gnome-console # blackbox
     ];
 
     # system packages to install globally
@@ -287,13 +223,6 @@
       pciutils
       usbutils
     ];
-
-    # misc envvars
-    variables = {
-      # variable to avoid an obscure annoying bug on GNOME/Nvidia Optimus setups
-      # https://wiki.archlinux.org/title/GTK#GTK4_applications_using_the_dGPU_on_NVIDIA_Optimus_setups
-      GSK_RENDERER = "ngl";
-    };
   };
 
   # nix settings
@@ -310,11 +239,6 @@
       options = "--delete-older-than 30d";
     };
   };
-
-  # out-of-the-box support for user-access to various game controllers
-  services.udev.packages = [
-    pkgs.game-devices-udev-rules
-  ];
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.knox = {
@@ -404,7 +328,6 @@
         obsidian
         spotify
         calibre
-        blackbox-terminal
 
         # required for the shell aliases below
         yt-dlp
@@ -434,5 +357,6 @@
 
   # Basically used to pin application data storage formats
   # to the original version of NixOS installed on this machine.
+  # Changing this will probably result in lost data. 
   system.stateVersion = "25.05";
 }
