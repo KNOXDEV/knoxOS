@@ -26,7 +26,7 @@
           ];
           last-selected-power-profile = "performance";
           # dock order
-          favorite-apps = ["firefox.desktop" "org.gnome.Nautilus.desktop" "com.raggesilver.BlackBox.desktop"];
+          favorite-apps = ["firefox.desktop" "org.gnome.Nautilus.desktop" "org.gnome.Console.desktop"];
           # i would love to set the app-picker-layout automatically as well but
           # dconf2nix chokes on this for some reason and I don't feel like writing it by hand.
           # app-picker-layout = [];
