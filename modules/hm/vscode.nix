@@ -26,6 +26,7 @@
           "explorer.confirmDragAndDrop" = false;
           "explorer.confirmDelete" = false;
           "explorer.confirmPasteNative" = false;
+          "security.workspace.trust.untrustedFiles" = "newWindow";
         };
       };
     };
