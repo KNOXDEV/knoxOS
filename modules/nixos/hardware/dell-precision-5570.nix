@@ -57,7 +57,7 @@
 
   # variable to avoid an obscure annoying bug on GNOME/Nvidia Optimus setups
   # https://wiki.archlinux.org/title/GTK#GTK4_applications_using_the_dGPU_on_NVIDIA_Optimus_setups
-  environment.variables = {
+  environment.sessionVariables = {
     GSK_RENDERER = "ngl";
   };
 }
