@@ -16,6 +16,14 @@
           "nix.formatterPath" = "${pkgs.alejandra}/bin/alejandra";
           "nix.serverPath" = "${pkgs.nil}/bin/nil";
           "nix.serverSettings"."nil"."formatting"."command" = ["${pkgs.alejandra}/bin/alejandra"];
+
+          # personal preferences
+          "git.autofetch" = true;
+          
+          # nag settings
+          "explorer.confirmDragAndDrop" = false;
+          "explorer.confirmDelete" = false;
+          "explorer.confirmPasteNative" = false;
         };
       };
     };
