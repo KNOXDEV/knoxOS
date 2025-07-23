@@ -19,6 +19,7 @@
 
           # personal preferences
           "git.autofetch" = true;
+          "git.confirmSync" = false;
           
           # nag settings
           "explorer.confirmDragAndDrop" = false;
