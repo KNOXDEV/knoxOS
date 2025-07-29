@@ -5,12 +5,6 @@
     # pinned to stable for now
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
 
-    # home directory management
-    home-manager = {
-      url = "github:nix-community/home-manager/release-25.05";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # this is to provide command-not-found functionality via nix-index
     nix-index-database = {
       url = "github:nix-community/nix-index-database";
@@ -33,7 +27,6 @@
   outputs = {
     self,
     nixpkgs,
-    home-manager,
     nix-index-database,
     ...
   } @ inputs: let
@@ -51,6 +44,11 @@
       vscode-extensions = inputs.nix-vscode-extensions.overlays.default;
       firefox-addons = inputs.firefox-addons.overlays.default;
     };
+
+    # group all the modules we've imported
+    importedNixosModules = {
+      nix-index = inputs.nix-index-database.nixosModules.nix-index;
+    };
   in {
     # custom packages
     packages = forAllSystems (system: enumerateCustomPackages nixpkgs.legacyPackages.${system});
@@ -59,20 +57,15 @@
     overlays = import ./overlays {inherit enumerateCustomPackages;} // importedOverlays;
 
     # reusable modules
-    nixosModules = import ./modules/nixos;
-    homeManagerModules = import ./modules/hm;
+    nixosModules = import ./modules/nixos // importedNixosModules;
 
     # nixos config
     nixosConfigurations = {
       toaster = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        modules = [
-          ./hosts/toaster
-          nix-index-database.nixosModules.nix-index
-          home-manager.nixosModules.home-manager
-        ];
+        modules = [./hosts/toaster];
         # let our nixos config use our overlays and modules
-        specialArgs = {inherit (self.outputs) overlays nixosModules homeManagerModules;};
+        specialArgs = {inherit (self.outputs) overlays nixosModules;};
       };
     };
   };

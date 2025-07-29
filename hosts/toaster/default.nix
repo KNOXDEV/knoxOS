@@ -2,13 +2,17 @@
   pkgs,
   overlays,
   nixosModules,
-  homeManagerModules,
   ...
 }: {
-  imports = [
+  imports = with nixosModules; [
     ./hardware-configuration.nix
-    nixosModules.hardware.precision5570
-    nixosModules.logiops
+    # locally defined
+    hardware.precision5570
+    logiops
+    controllers
+
+    # community modules
+    nix-index
   ];
 
   nixpkgs = {
@@ -53,10 +57,6 @@
     LC_TIME = "en_US.UTF-8";
   };
 
-  # flashing zsa keyboards requires special udev rules
-  # https://wiki.nixos.org/wiki/ZSA_Keyboards
-  hardware.keyboard.zsa.enable = true;
-
   services.xserver = {
     # Enable the X11 windowing system.
     enable = true;
@@ -92,15 +92,6 @@
     pulse.enable = true;
   };
 
-  # device emulation support (required for Steam input)
-  # Note that you will still need to add users to the "uinput" group
-  hardware.uinput.enable = true;
-
-  # out-of-the-box support for user-access to various game controllers
-  services.udev.packages = [
-    pkgs.game-devices-udev-rules
-  ];
-
   # some software is better off flatpak'd
   services.flatpak.enable = true;
 
@@ -125,6 +116,29 @@
         };
       };
     };
+
+    # chromium sometimes useful, although note that this doesn't actually install it,
+    # so pick a package in environment.systemPackages
+    chromium = {
+      enable = true;
+      # ublock origin
+      extensions = ["cjpalhdlnbpafiamejdnhcphjbkeiagm"];
+      extraOpts = {
+        "BrowserSignin" = 0;
+        "SyncDisabled" = true;
+        "PasswordManagerEnabled" = false;
+        "SpellcheckEnabled" = true;
+      };
+    };
+
+    # obs with nvenc support
+    obs-studio = {
+      enable = true;
+      package = pkgs.obs-studio.override {
+        cudaSupport = true;
+      };
+    };
+
     git = {
       enable = true;
       config.init.defaultBranch = "main";
@@ -137,6 +151,14 @@
 
     # we'll be using nix-index to replace this functionality
     command-not-found.enable = false;
+
+    # hipster cli tools
+    zoxide = {
+      enable = true;
+      enableFishIntegration = true;
+      flags = ["--cmd cd"];
+    };
+    bat.enable = true;
   };
 
   # fonts
@@ -165,6 +187,16 @@
   virtualisation.docker.enable = true;
 
   environment = {
+    # todo: find a better place for these
+    shellAliases = {
+      # download youtube as either video or audio: highest available quality
+      yta = ''yt-dlp -o "~/Downloads/%(title)s.%(ext)s" --restrict-filenames -f ba --remux-video ogg "$1"'';
+      ytv = ''yt-dlp -o "~/Downloads/%(title)s.%(ext)s" --restrict-filenames --recode-video mp4 "$1"'';
+
+      # nix shorthands
+      upgrade = ''nix flake update && sudo nixos-rebuild switch --flake path:// && sudo systemctl shutdown --now'';
+    };
+
     # gnome packages to not install
     gnome.excludePackages = with pkgs; [
       # wastes of space
@@ -198,9 +230,27 @@
       # media player replacements
       celluloid
       amberol
+      fragments
+      calibre
+      kdePackages.kdenlive
 
-      # essential cli tools
+      # misc cli utils
+      ffmpeg
+      uutils-coreutils-noprefix
+      desktop-file-utils
+      pciutils
+      usbutils
+      file
+      patchelf
       jq
+      fd
+      eza
+      fastfetch
+      ripgrep
+      yt-dlp
+      # custom packages
+      dv
+      fftrim
 
       # nix dev nice-to-haves
       nil
@@ -215,13 +265,19 @@
       gnome-tweaks
       gnome-extension-manager
       adw-gtk3
+      dconf-editor
 
-      # misc cli utils
-      ffmpeg
-      uutils-coreutils-noprefix
-      desktop-file-utils
-      pciutils
-      usbutils
+      # i love browsers!!!
+      firefox
+      ungoogled-chromium
+      obsidian
+      spotify
+      signal-desktop
+      vesktop
+
+      # using fhs allows vscode to manage its own extensions as you would normally
+      # todo: maybe do this with vscodium and manually configured extensions instead
+      vscode.fhs
     ];
   };
 
@@ -246,113 +302,6 @@
     description = "Nick Knox";
     extraGroups = ["networkmanager" "wheel" "docker" "uinput" ];
     shell = pkgs.fish;
-  };
-
-  # home manager configuration for the only user above
-  home-manager = {
-    # follow nixos nixpkgs
-    useGlobalPkgs = true;
-    useUserPackages = true;
-
-    users.knox = { pkgs, lib, ... }: {
-      home.username = "knox";
-      home.homeDirectory = "/home/knox";
-      home.stateVersion = "25.05"; # DO NOT CHANGE EVER
-
-      # home-manager modules
-      imports = [
-        homeManagerModules.firefox
-        homeManagerModules.vscode
-        homeManagerModules.gnome-settings
-      ];
-
-      # sets the wallpaper to be used in the gnome-settings module
-      gnome-settings.wallpaper = ./wallpaper.jpg;
-
-      # home-manager programs
-      programs = {
-        git = {
-          enable = true;
-          userName = "Nick Knox";
-          userEmail = "nick@knox.codes";
-        };
-
-        # Enable the fish shell explictly so home manager knows about it.
-        # Be a bit careful; this will override certain fish configurations at the NixOS level.
-        fish.enable = true;
-
-        # chromium sometimes useful
-        chromium = {
-          enable = true;
-          package = pkgs.ungoogled-chromium;
-        };
-
-        # boy howdy do I love electron
-        vesktop.enable = true;
-
-        # TODO: will be available starting with next stable
-        # obsidian.enable = true;
-
-        # obs with nvidia support
-        obs-studio = {
-          enable = true;
-          package = pkgs.obs-studio.override {
-            cudaSupport = true;
-          };
-        };
-
-        # hipster cli tools
-        zoxide = {
-          enable = true;
-          enableFishIntegration = true;
-          options = ["--cmd cd"];
-        };
-        bat.enable = true;
-        eza = {
-          enable = true;
-          enableFishIntegration = true;
-        };
-        fastfetch.enable = true;
-        fd.enable = true;
-        ripgrep.enable = true;
-      };
-
-      # The home.packages option allows you to install Nix packages into your
-      # environment.
-      home.packages = with pkgs; [
-        # sorry, i like GUIs
-        kdePackages.kdenlive
-        fragments
-        signal-desktop
-        dconf-editor
-        obsidian
-        spotify
-        calibre
-
-        # required for the shell aliases below
-        yt-dlp
-
-        # custom packages
-        dv
-        fftrim
-      ];
-
-      # shell aliases 
-      home.shellAliases = {
-        # download youtube as either video or audio: highest available quality
-        yta = ''yt-dlp -o "~/Downloads/%(title)s.%(ext)s" --restrict-filenames -f ba --remux-video ogg "$1"'';
-        ytv = ''yt-dlp -o "~/Downloads/%(title)s.%(ext)s" --restrict-filenames --recode-video mp4 "$1"'';
-
-        # nix shorthands
-        upgrade = ''nix flake update && sudo nixos-rebuild switch --flake path://'';
-      };
-
-      # restarting modified systemd units after a home-manager switch is nice
-      systemd.user.startServices = "sd-switch";
-
-      # Let Home Manager install and manage itself.
-      programs.home-manager.enable = true;
-    };
   };
 
   # Basically used to pin application data storage formats
