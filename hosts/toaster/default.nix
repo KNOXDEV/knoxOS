@@ -16,7 +16,7 @@
   ];
 
   nixpkgs = {
-     # Allow unfree packages
+    # Allow unfree packages
     config.allowUnfree = true;
 
     # overlay our custom and imported packages
@@ -130,6 +130,16 @@
         "SpellcheckEnabled" = true;
       };
     };
+
+    # vscodium with extensions
+    # TODO: this will be valid next major NixOS release
+    # vscode = {
+    #   enable = true;
+    #   package = pkgs.vscodium;
+    #   extensions = with open-vsx; [
+    #   ];
+    # };
+    # obsidian = {};
 
     # obs with nvenc support
     obs-studio = {
@@ -278,6 +288,14 @@
       # using fhs allows vscode to manage its own extensions as you would normally
       # todo: maybe do this with vscodium and manually configured extensions instead
       vscode.fhs
+
+      # attempt to use vscodium with hardcoded extensions
+      (vscode-with-extensions.override {
+        vscode = vscodium;
+        vscodeExtensions = with open-vsx; [
+          jnoortheen.nix-ide
+        ];
+      })
     ];
   };
 
@@ -300,12 +318,12 @@
   users.users.knox = {
     isNormalUser = true;
     description = "Nick Knox";
-    extraGroups = ["networkmanager" "wheel" "docker" "uinput" ];
+    extraGroups = ["networkmanager" "wheel" "docker" "uinput"];
     shell = pkgs.fish;
   };
 
   # Basically used to pin application data storage formats
   # to the original version of NixOS installed on this machine.
-  # Changing this will probably result in lost data. 
+  # Changing this will probably result in lost data.
   system.stateVersion = "25.05";
 }
