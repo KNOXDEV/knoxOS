@@ -92,6 +92,9 @@
     pulse.enable = true;
   };
 
+  # i have a qmk programmable keyboard
+  hardware.keyboard.qmk.enable = true;
+
   # some software is better off flatpak'd
   services.flatpak.enable = true;
 
@@ -285,9 +288,9 @@
       signal-desktop
       vesktop
 
-      # using fhs allows vscode to manage its own extensions as you would normally
-      # todo: maybe do this with vscodium and manually configured extensions instead
-      vscode.fhs
+
+      # for programming my keyboard
+      qmk
 
       # attempt to use vscodium with hardcoded extensions
       (vscode-with-extensions.override {
