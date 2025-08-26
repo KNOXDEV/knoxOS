@@ -165,6 +165,11 @@
     # we'll be using nix-index to replace this functionality
     command-not-found.enable = false;
 
+    direnv = {
+      enable = true;
+      enableFishIntegration = true;
+    };
+
     # hipster cli tools
     zoxide = {
       enable = true;
