@@ -301,7 +301,13 @@
       (vscode-with-extensions.override {
         vscode = vscodium;
         vscodeExtensions = with open-vsx; [
+          # general nix trappings
           jnoortheen.nix-ide
+          mkhl.direnv
+
+          # useful language-specific plugins
+          rust-lang.rust-analyzer
+          tamasfe.even-better-toml
         ];
       })
     ];
