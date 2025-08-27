@@ -2,8 +2,8 @@
 
 
 
-### NixOS configuration (includes home manager configuration)
+### NixOS configuration
 
 ```bash
-sudo nixos-rebuild switch --flake .
+nixos-rebuild switch --use-remote-sudo --flake path://
 ```

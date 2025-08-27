@@ -273,6 +273,7 @@
       # nix dev nice-to-haves
       nil
       alejandra
+      devenv
 
       # shell nice-to-haves
       ffmpegthumbnailer
