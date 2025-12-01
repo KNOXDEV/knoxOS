@@ -78,6 +78,12 @@
   services.gnome.core-apps.enable = false;
   services.gnome.sushi.enable = true;
 
+  # add ghostty to gnome's right click "Open in Terminal" menu
+  xdg.terminal-exec = {
+    enable = true;
+    settings.default = ["ghostty.desktop"];
+  };
+
   # I love CUPS!!!!
   # https://wiki.nixos.org/wiki/Printing
   services.printing.enable = true;
