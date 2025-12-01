@@ -254,6 +254,7 @@
 
       # misc cli utils
       ffmpeg
+      helix
       uutils-coreutils-noprefix
       desktop-file-utils
       pciutils
@@ -298,7 +299,6 @@
       spotify
       signal-desktop
       vesktop
-
 
       # for programming my keyboard
       qmk
