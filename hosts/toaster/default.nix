@@ -2,6 +2,7 @@
   pkgs,
   overlays,
   nixosModules,
+  lib,
   ...
 }: {
   imports = with nixosModules; [
@@ -27,6 +28,20 @@
     ];
   };
 
+  # provide a bootable specialization to use power saving instead
+  specialisation = {
+    powersave.configuration = {
+      hardware.nvidia.prime = {
+        # disable sync, enable offloading
+        sync.enable = lib.mkForce false;
+        offload = {
+          enable = true;
+          enableOffloadCmd = true;
+        };
+      };
+    };
+  };
+
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -39,8 +54,8 @@
   networking.hostName = "toaster";
   networking.networkmanager.enable = true;
 
-  # Set your time zone.
-  time.timeZone = "America/Los_Angeles";
+  # Allow the desktop user to set the timezone
+  time.timeZone = lib.mkForce null;
 
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
@@ -57,20 +72,11 @@
     LC_TIME = "en_US.UTF-8";
   };
 
-  services.xserver = {
-    # Enable the X11 windowing system.
-    enable = true;
-
-    # Enable the GNOME Desktop Environment.
-    displayManager.gdm.enable = true;
-    desktopManager.gnome.enable = true;
-
-    # Configure keymap in X11
-    xkb = {
-      layout = "us";
-      variant = "";
-    };
-  };
+  # Enable the GNOME Desktop Environment.
+  services.desktopManager.gnome.enable = true;
+  services.displayManager.gdm.enable = true;
+  services.gnome.core-apps.enable = false;
+  services.gnome.sushi.enable = true;
 
   # I love CUPS!!!!
   # https://wiki.nixos.org/wiki/Printing
@@ -135,14 +141,22 @@
     };
 
     # vscodium with extensions
-    # TODO: this will be valid next major NixOS release
-    # vscode = {
-    #   enable = true;
-    #   package = pkgs.vscodium;
-    #   extensions = with open-vsx; [
-    #   ];
-    # };
+    vscode = {
+      enable = true;
+      package = pkgs.vscodium;
+      extensions = with pkgs.open-vsx; [
+        # general nix trappings
+        jnoortheen.nix-ide
+        mkhl.direnv
+
+        # useful language-specific plugins
+        rust-lang.rust-analyzer
+        tamasfe.even-better-toml
+      ];
+    };
     # obsidian = {};
+
+    gnome-disks.enable = true;
 
     # obs with nvenc support
     obs-studio = {
@@ -170,6 +184,9 @@
       enableFishIntegration = true;
     };
 
+    # requires virtualization.libvirtd to be enabled
+    virt-manager.enable = true;
+
     # hipster cli tools
     zoxide = {
       enable = true;
@@ -186,7 +203,7 @@
       # noto to support as many glyphs as possible
       noto-fonts
       noto-fonts-cjk-sans
-      noto-fonts-emoji
+      noto-fonts-color-emoji
 
       # nerd fonts
       nerd-fonts.jetbrains-mono
@@ -204,6 +221,10 @@
   # docker
   virtualisation.docker.enable = true;
 
+  # libvirt for virt-manager
+  virtualisation.libvirtd.enable = true;
+  virtualisation.spiceUSBRedirection.enable = true;
+
   environment = {
     # todo: find a better place for these
     shellAliases = {
@@ -215,34 +236,6 @@
       upgrade = ''nix flake update && sudo nixos-rebuild switch --flake path:// && sudo systemctl shutdown --now'';
     };
 
-    # gnome packages to not install
-    gnome.excludePackages = with pkgs; [
-      # wastes of space
-      gnome-tour
-      gnome-user-docs
-      gnome-maps
-      gnome-font-viewer
-      gnome-logs
-      gnome-connections
-      yelp # help
-      seahorse # passwords and keys
-
-      # unncessary
-      gnome-shell-extensions
-      gnome-software
-      xterm
-
-      # basic apps replaced with alternatives
-      gnome-text-editor
-      gnome-music
-      decibels # audio player
-      snapshot # webcam viewer
-      totem # video player
-      geary # email client
-      epiphany # firefox fork
-      gnome-calendar
-    ];
-
     # system packages to install globally
     systemPackages = with pkgs; [
       # media player replacements
@@ -251,6 +244,7 @@
       fragments
       calibre
       kdePackages.kdenlive
+      audacity
 
       # misc cli utils
       ffmpeg
@@ -273,7 +267,6 @@
       # nix dev nice-to-haves
       nil
       alejandra
-      devenv
 
       # shell nice-to-haves
       ffmpegthumbnailer
@@ -281,8 +274,14 @@
       gnomeExtensions.blur-my-shell
       gnomeExtensions.dash-to-dock
       gnomeExtensions.appindicator
+      gnome-clocks
       gnome-tweaks
       gnome-extension-manager
+      gnome-system-monitor
+      papers # document viewer
+      loupe # image viewer
+      nautilus # file browser
+      ghostty # terminal
       adw-gtk3
       dconf-editor
 
@@ -297,20 +296,6 @@
 
       # for programming my keyboard
       qmk
-
-      # attempt to use vscodium with hardcoded extensions
-      (vscode-with-extensions.override {
-        vscode = vscodium;
-        vscodeExtensions = with open-vsx; [
-          # general nix trappings
-          jnoortheen.nix-ide
-          mkhl.direnv
-
-          # useful language-specific plugins
-          rust-lang.rust-analyzer
-          tamasfe.even-better-toml
-        ];
-      })
     ];
   };
 

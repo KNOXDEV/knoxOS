@@ -3,7 +3,7 @@
 
   inputs = {
     # pinned to stable for now
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
 
     # this is to provide command-not-found functionality via nix-index
     nix-index-database = {
@@ -49,9 +49,22 @@
     importedNixosModules = {
       nix-index = inputs.nix-index-database.nixosModules.nix-index;
     };
+
+    # installer nixos config we don't expose directly
+    destructiveRamInstaller = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+      modules = [ ./hosts/destructive-installer ];
+      specialArgs = {
+        configToInstall = ./hosts/minimal-remote;
+      };
+    };
+
+    isoPackages.x86_64-linux = {
+      destructive-installer-iso = destructiveRamInstaller.config.system.build.isoImage;
+    };
   in {
     # custom packages
-    packages = forAllSystems (system: enumerateCustomPackages nixpkgs.legacyPackages.${system});
+    packages = forAllSystems (system: enumerateCustomPackages nixpkgs.legacyPackages.${system}) // isoPackages;
 
     # custom nixpkgs overlays, mainly for using with our primary configurations
     overlays = import ./overlays {inherit enumerateCustomPackages;} // importedOverlays;
@@ -59,7 +72,7 @@
     # reusable modules
     nixosModules = import ./modules/nixos // importedNixosModules;
 
-    # nixos config
+    # nixos configs
     nixosConfigurations = {
       toaster = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
