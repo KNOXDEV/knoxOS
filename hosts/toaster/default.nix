@@ -78,12 +78,6 @@
   services.gnome.core-apps.enable = false;
   services.gnome.sushi.enable = true;
 
-  # add ghostty to gnome's right click "Open in Terminal" menu
-  xdg.terminal-exec = {
-    enable = true;
-    settings.default = ["ghostty.desktop"];
-  };
-
   # I love CUPS!!!!
   # https://wiki.nixos.org/wiki/Printing
   services.printing.enable = true;
@@ -240,6 +234,11 @@
 
       # nix shorthands
       upgrade = ''nix flake update && sudo nixos-rebuild switch --flake path:// && sudo systemctl shutdown --now'';
+    };
+
+    sessionVariables = {
+      # reeee: https://github.com/NixOS/nixpkgs/issues/378139
+      NAUTILUS_4_EXTENSION_DIR = "${pkgs.nautilus-python}/lib/nautilus/extensions-4";
     };
 
     # system packages to install globally
