@@ -152,6 +152,7 @@
         # useful language-specific plugins
         rust-lang.rust-analyzer
         tamasfe.even-better-toml
+        svelte.svelte-vscode
       ];
     };
     # obsidian = {};
