@@ -153,6 +153,8 @@
         rust-lang.rust-analyzer
         tamasfe.even-better-toml
         svelte.svelte-vscode
+        dbaeumer.vscode-eslint
+        denoland.vscode-deno
       ];
     };
     # obsidian = {};
@@ -299,6 +301,10 @@
       spotify
       signal-desktop
       vesktop
+
+      # will seemingly work in the next major and/or nightly
+      #proton-vpn-cli
+      protonvpn-gui
 
       # for programming my keyboard
       qmk
